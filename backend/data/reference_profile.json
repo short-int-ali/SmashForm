@@ -1,0 +1,87 @@
+{
+  "shoulder_rotation_angle": {
+    "reference": 45.0,
+    "display_name": "Shoulder Rotation",
+    "unit": "degrees",
+    "description": "Maximum shoulder rotation during backswing. Greater rotation stores more energy for powerful smash.",
+    "elite_range": [40, 55]
+  },
+  "shoulder_angular_velocity": {
+    "reference": 800.0,
+    "display_name": "Shoulder Angular Velocity",
+    "unit": "deg/s",
+    "description": "Peak rotational speed of shoulders. Elite players achieve 700-1000 deg/s.",
+    "elite_range": [700, 1000]
+  },
+  "elbow_extension_angle": {
+    "reference": 165.0,
+    "display_name": "Elbow Extension",
+    "unit": "degrees",
+    "description": "Elbow angle at contact. Near-full extension (160-175°) maximizes reach and power.",
+    "elite_range": [160, 175]
+  },
+  "elbow_angular_velocity": {
+    "reference": 1200.0,
+    "display_name": "Elbow Angular Velocity",
+    "unit": "deg/s",
+    "description": "Speed of elbow extension. Critical for generating racket head speed.",
+    "elite_range": [1000, 1500]
+  },
+  "wrist_snap_timing": {
+    "reference": 8.0,
+    "display_name": "Wrist Snap Timing",
+    "unit": "%",
+    "description": "Wrist peak velocity timing relative to elbow. Should occur 5-12% after elbow peak.",
+    "elite_range": [5, 12]
+  },
+  "hip_shoulder_separation": {
+    "reference": 45.0,
+    "display_name": "Hip-Shoulder Separation",
+    "unit": "degrees",
+    "description": "Rotational coil between hips and shoulders. Greater separation = more stored energy.",
+    "elite_range": [35, 55]
+  },
+  "knee_flexion_angle": {
+    "reference": 120.0,
+    "display_name": "Knee Flexion",
+    "unit": "degrees",
+    "description": "Knee bend during loading. Optimal 110-130° balances power and stability.",
+    "elite_range": [110, 130]
+  },
+  "com_vertical_displacement": {
+    "reference": 80.0,
+    "display_name": "Vertical Displacement",
+    "unit": "pixels",
+    "description": "Upward body movement during swing. Jump smash shows significant displacement.",
+    "elite_range": [60, 120]
+  },
+  "hip_shoulder_delay": {
+    "reference": 25.0,
+    "display_name": "Hip-Shoulder Delay",
+    "unit": "ms",
+    "description": "Time between hip and shoulder peak velocity. Proper sequencing: 20-35ms.",
+    "elite_range": [20, 35]
+  },
+  "shoulder_elbow_delay": {
+    "reference": 20.0,
+    "display_name": "Shoulder-Elbow Delay",
+    "unit": "ms",
+    "description": "Time between shoulder and elbow peak. Optimal range: 15-30ms.",
+    "elite_range": [15, 30]
+  },
+  "elbow_wrist_delay": {
+    "reference": 15.0,
+    "display_name": "Elbow-Wrist Delay",
+    "unit": "ms",
+    "description": "Time between elbow and wrist peak. Should be 10-20ms for proper snap.",
+    "elite_range": [10, 20]
+  },
+  "swing_duration_ms": {
+    "reference": 250.0,
+    "display_name": "Swing Duration",
+    "unit": "ms",
+    "description": "Total swing time from loading to contact. Elite range: 200-300ms.",
+    "elite_range": [200, 300]
+  }
+}
+
