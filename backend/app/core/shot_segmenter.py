@@ -15,7 +15,7 @@ The overhead smash has distinct phases:
 """
 import numpy as np
 from scipy import signal
-from typing import Optional
+from typing import Optional, Literal
 from ..models.schemas import FramePose, ShotSegment, Keypoint
 
 
@@ -24,6 +24,14 @@ MIN_FRAMES_FOR_ANALYSIS = 15
 
 # Smoothing window for velocity calculations (frames)
 SMOOTHING_WINDOW = 5
+
+# Shot type detection thresholds (biomechanical characteristics)
+# These distinguish smashes from other overhead shots (drops, clears)
+SMASH_VELOCITY_THRESHOLD = 500  # pixels/second - smashes have high wrist velocity
+SMASH_DURATION_MAX_MS = 400  # Smashes are fast (< 400ms typically)
+SMASH_DURATION_MIN_MS = 150  # Minimum reasonable smash duration
+DROP_SHOT_DURATION_MIN_MS = 300  # Drop shots are slower
+DROP_SHOT_VELOCITY_MAX = 400  # Drop shots have lower peak velocities
 
 
 class ShotSegmenter:
@@ -102,13 +110,90 @@ class ShotSegmenter:
         total_frames = contact_frame - start_frame
         duration_ms = (total_frames / fps) * 1000 if fps > 0 else 0
         
-        return ShotSegment(
+        segment = ShotSegment(
             start_frame=start_frame,
             contact_frame=contact_frame,
             end_frame=end_frame,
             total_frames=total_frames,
             duration_ms=duration_ms
         )
+        
+        # Validate that this is actually a smash (not drop shot, clear, etc.)
+        is_smash = self._validate_smash(poses, segment, wrist_velocities_smooth, fps)
+        if not is_smash:
+            return None  # Reject non-smash shots
+        
+        return segment
+    
+    def _validate_smash(
+        self,
+        poses: list[FramePose],
+        segment: ShotSegment,
+        wrist_velocities: np.ndarray,
+        fps: float
+    ) -> bool:
+        """
+        Validate that the detected shot is actually a smash.
+        
+        Uses biomechanical characteristics to distinguish smashes from
+        other overhead shots (drops, clears):
+        - Smashes have HIGH peak wrist velocities (>500 px/s)
+        - Smashes are FAST (150-400ms duration)
+        - Drop shots are slower and have lower velocities
+        
+        Args:
+            poses: Full pose sequence
+            segment: Detected shot segment
+            wrist_velocities: Wrist velocity array
+            fps: Video frames per second
+            
+        Returns:
+            True if shot appears to be a smash, False otherwise
+        """
+        # Check 1: Swing duration
+        # Smashes are fast: typically 150-400ms
+        # Drop shots are slower: typically 400-800ms
+        # Clears are even slower: 500-1000ms
+        if segment.duration_ms < SMASH_DURATION_MIN_MS:
+            # Too fast - might be incomplete detection
+            return False
+        
+        if segment.duration_ms > SMASH_DURATION_MAX_MS:
+            # Too slow - likely a drop shot or clear
+            return False
+        
+        # Check 2: Peak wrist velocity
+        # Smashes generate high racket head speed
+        # Extract velocities in the shot segment
+        shot_start_idx = segment.start_frame
+        shot_end_idx = min(segment.contact_frame + 5, len(wrist_velocities) - 1)
+        
+        if shot_start_idx >= len(wrist_velocities) or shot_end_idx <= shot_start_idx:
+            return False
+        
+        shot_velocities = wrist_velocities[shot_start_idx:shot_end_idx]
+        peak_velocity = np.max(shot_velocities)
+        
+        # Smashes should have high peak velocity
+        # Drop shots have controlled, slower movements
+        if peak_velocity < SMASH_VELOCITY_THRESHOLD:
+            # Velocity too low - likely a drop shot
+            return False
+        
+        # Check 3: Acceleration pattern
+        # Smashes have explosive acceleration, drops are more controlled
+        # Compute acceleration (derivative of velocity)
+        if len(shot_velocities) > 3:
+            accelerations = np.diff(shot_velocities)
+            max_acceleration = np.max(accelerations)
+            
+            # Smashes should show rapid acceleration
+            # Threshold: at least 200 px/s² acceleration
+            if max_acceleration < 200:
+                return False
+        
+        # All checks passed - likely a smash
+        return True
     
     def _compute_knee_angles(self, poses: list[FramePose]) -> Optional[np.ndarray]:
         """
