@@ -431,3 +431,4 @@ class ShotSegmenter:
         
         return ((frame - start_frame) / (contact_frame - start_frame)) * 100
 
+"Test string for pushing to github"
